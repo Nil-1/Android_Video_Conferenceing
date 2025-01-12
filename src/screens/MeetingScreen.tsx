@@ -1,4 +1,3 @@
-
 import React, {useCallback, useRef} from 'react';
 
 import {JitsiMeeting} from '@jitsi/react-native-sdk';
@@ -13,10 +12,9 @@ const MeetingScreen = ({route}: MeetingProps) => {
   const jitsiMeeting = useRef(null);
   const navigation = useNavigation();
 
-  const {room} = route.params;
+  const {room, isHost} = route.params; // Added isHost
 
   const onReadyToClose = useCallback(() => {
-    // @ts-ignore
     navigation.navigate('Home');
     // @ts-ignore
     jitsiMeeting.current.close();
@@ -52,6 +50,8 @@ const MeetingScreen = ({route}: MeetingProps) => {
           enabled: true,
           collabServerBaseUrl: 'https://meet.jit.si/',
         },
+        startWithAudioMuted: !isHost, // Host starts unmuted
+        startWithVideoMuted: !isHost, // Host starts unmuted
       }}
       eventListeners={eventListeners as any}
       flags={{
