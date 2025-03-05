@@ -46,10 +46,6 @@ const MeetingScreen = ({route}: MeetingProps) => {
             text: 'Button two',
           },
         ],
-        whiteboard: {
-          enabled: true,
-          collabServerBaseUrl: 'https://meet.jit.si/',
-        },
         startWithAudioMuted: !isHost, // Host starts unmuted
         startWithVideoMuted: !isHost, // Host starts unmuted
       }}
@@ -69,7 +65,7 @@ const MeetingScreen = ({route}: MeetingProps) => {
       ref={jitsiMeeting}
       style={{flex: 1}}
       room={room}
-      serverURL={'https://meet.jit.si/'}
+      serverURL={'https://gibranzhang.xyz/'}
     />
   );
 };

@@ -1,12 +1,13 @@
 import React, {useState} from 'react';
-import {View, StyleSheet} from 'react-native';
+import {Alert, StyleSheet, View} from 'react-native';
 import {Button, TextInput, Title} from 'react-native-paper';
 import LinearGradient from 'react-native-linear-gradient';
-import { useNavigation } from "@react-navigation/native"; // Ensure this library is installed
+import {useNavigation} from '@react-navigation/native'; // Ensure this library is installed
 
 const HomeScreen = () => {
   const navigation = useNavigation();
   const [room, setRoom] = useState('');
+  const [password, setPassword] = useState('');
 
   return (
     <LinearGradient
@@ -23,26 +24,60 @@ const HomeScreen = () => {
         placeholder="Enter or create a room"
       />
 
-      <Button
-        mode="contained"
-        onPress={() => navigation.navigate('Meeting', {room})}
-        style={styles.button}
-        contentStyle={styles.buttonContent}
-        disabled={!room}>
-        Join Meeting
-      </Button>
-
-      <Button
+      <TextInput
+        label="Meeting Password(Optional)"
+        value={password}
+        onChangeText={setPassword}
         mode="outlined"
-        onPress={() => {
-          const newRoom = `room-${Date.now()}`;
-          setRoom(newRoom);
-          navigation.navigate('Meeting', {room: newRoom, isHost: true});
-        }}
-        style={[styles.button, styles.outlinedButton]}
-        contentStyle={styles.buttonContent}>
-        Create Meeting
-      </Button>
+        style={styles.input}
+        placeholder="Set a password (optional)"
+        secureTextEntry={true}
+      />
+
+      <View style={styles.buttonContainer}>
+        <Button
+          mode="contained"
+          onPress={() => navigation.navigate('Meeting', {room, password})}
+          style={styles.button}
+          contentStyle={styles.buttonContent}
+          disabled={!room} // Disable button if no room
+        >
+          Join Meeting
+        </Button>
+
+        <Button
+          mode="contained"
+          onPress={() => {
+            const newRoom = 'room-${Date.now()}';
+            setRoom(newRoom);
+            navigation.navigate('Meeting', {room: newRoom, isHost: true});
+          }}
+          style={styles.button}
+          contentStyle={styles.buttonContent}>
+          Quick Meeting
+        </Button>
+
+        <Button
+          mode="contained"
+          onPress={() => {
+            if (!password) {
+              Alert.alert('Please set a password for encryption');
+              return;
+            }
+            const newRoom = 'secure-room-${Date.now()}';
+            setRoom(newRoom);
+            navigation.navigate('Meeting', {
+              room: newRoom,
+              password,
+              isHost: true,
+            });
+          }}
+          style={[styles.button, styles.secureButton]}
+          constentStyle={styles.buttonContent}
+          disabled={!password}>
+          Create Secure Meeting
+        </Button>
+      </View>
     </LinearGradient>
   );
 };
@@ -52,29 +87,33 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#333333',
     marginBottom: 20,
   },
   input: {
-    width: '80%',
-    marginBottom: 20,
+    width: '100%',
+    marginBottom: 15,
     backgroundColor: 'white',
   },
+  buttonContainer: {
+    width: '100%',
+    alignItems: 'center',
+  },
   button: {
-    width: '80%',
-    marginVertical: 10,
-    borderRadius: 25,
+    width: '100%',
+    marginVertical: 5,
+    borderRadius: 8,
+  },
+  secureButton: {
+    backgroundColor: '#FF6F61', // 红色，强调安全会议
   },
   buttonContent: {
     height: 50,
-  },
-  outlinedButton: {
-    borderWidth: 2,
-    borderColor: '#FF6F61', // Warm color border
   },
 });
 
