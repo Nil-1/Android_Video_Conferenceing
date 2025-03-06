@@ -3,10 +3,10 @@ import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 
-// @ts-ignore
-import Home from './screens/HomeScreen';
-// @ts-ignore
-import Meeting from './screens/MeetingScreen';
+import HomeScreen from './screens/HomeScreen';
+import MeetingScreen from './screens/MeetingScreen';
+import JoinMeetingScreen from './screens/JoinMeetingScreen';
+import CreateSecureMeetingScreen from './screens/CreateSecureMeetingScreen';
 
 const RootStack = createStackNavigator();
 
@@ -14,17 +14,31 @@ const App = () => (
   <NavigationContainer>
     <RootStack.Navigator initialRouteName="Home">
       <RootStack.Screen
-        component={Home}
+        component={HomeScreen}
         name="Home"
         options={{
           headerShown: false,
         }}
       />
       <RootStack.Screen
-        component={Meeting}
+        component={MeetingScreen}
         name="Meeting"
         options={{
           headerShown: false,
+        }}
+      />
+      <RootStack.Screen
+        component={JoinMeetingScreen}
+        name="JoinMeeting"
+        options={{
+          title: '加入会议',
+        }}
+      />
+      <RootStack.Screen
+        component={CreateSecureMeetingScreen}
+        name="CreateSecureMeeting"
+        options={{
+          title: '创建加密会议',
         }}
       />
     </RootStack.Navigator>

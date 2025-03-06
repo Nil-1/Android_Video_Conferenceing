@@ -3,22 +3,44 @@ import React, {useCallback, useRef} from 'react';
 import {JitsiMeeting} from '@jitsi/react-native-sdk';
 
 import {useNavigation} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface MeetingProps {
-  route: any;
+  route: {params: {room: string; isHost?: boolean; password?: string}};
 }
 
-const MeetingScreen = ({route}: MeetingProps) => {
+const MeetingScreen: React.FC<MeetingProps> = ({route}) => {
   const jitsiMeeting = useRef(null);
   const navigation = useNavigation();
-
   const {room, isHost} = route.params; // Added isHost
 
+  const saveMeetingRecord = async (room: string, date: string) => {
+    try {
+      // 获取当前存储的会议记录
+      const existingRecords = await AsyncStorage.getItem('meetingHistory');
+      const records = existingRecords ? JSON.parse(existingRecords) : [];
+
+      // 添加新的会议记录
+      const newRecord = {id: Date.now().toString(), room, date};
+      const updateRecords = [newRecord, ...records];
+
+      // 存入 AsynStorage
+      await AsyncStorage.setItem(
+        'meetingHistory',
+        JSON.stringify(updateRecords),
+      );
+    } catch (error) {
+      console.log('Error saving meeting record', error);
+    }
+  };
+
   const onReadyToClose = useCallback(() => {
+    const meetingDate = new Date().toLocaleString();
+    saveMeetingRecord(room, meetingDate);
     navigation.navigate('Home');
     // @ts-ignore
     jitsiMeeting.current.close();
-  }, [navigation]);
+  }, [navigation, room]);
 
   const onEndpointMessageReceived = useCallback(() => {
     console.log('You got a message!');
