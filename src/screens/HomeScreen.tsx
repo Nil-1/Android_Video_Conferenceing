@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   Image,
   StyleSheet,
@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   StatusBar,
 } from 'react-native';
-import {Text, Avatar, List} from 'react-native-paper';
+import {Text, List} from 'react-native-paper';
 import LinearGradient from 'react-native-linear-gradient';
 import {
   useNavigation,
@@ -15,6 +15,8 @@ import {
   StackActions,
 } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import RNShake from 'react-native-shake';
+import {themes} from '../util/themes';
 
 interface MeetingRecord {
   id: string;
@@ -22,37 +24,77 @@ interface MeetingRecord {
   date: string;
 }
 
+const THEME_KEY = 'uiTheme';
+
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation();
   const [meetingHistory, setMeetingHistory] = useState<MeetingRecord[]>([]);
+  const [currentThemeKey, setCurrentThemeKey] =
+    useState<string>('elegantViolet');
+  const currentTheme = themes[currentThemeKey];
 
   // 读取会议历史
   const loadMeetingHistory = async () => {
     try {
       const storedRecords = await AsyncStorage.getItem('meetingHistory');
       if (storedRecords) {
-        setMeetingHistory(JSON.parse(storedRecords));
+        const parsed = JSON.parse(storedRecords) as MeetingRecord[];
+        const valid = parsed.filter(item => item.id && item.id.trim() !== '');
+        setMeetingHistory(valid);
       }
     } catch (error) {
       console.log('Error loading meeting history', error);
     }
   };
 
-  // 删除某条会议记录
-  const deleteMeetingRecord = async (id: string) => {
+  // 加载存储的主题
+  const loadTheme = async () => {
     try {
-      const updated = meetingHistory.filter(item => item.id! == id);
-      setMeetingHistory(updated);
-      await AsyncStorage.setItem('meetingHistory', JSON.stringify(updated));
+      const storedThemeKey = await AsyncStorage.getItem(THEME_KEY);
+      if (storedThemeKey && themes[storedThemeKey]) {
+        setCurrentThemeKey(storedThemeKey);
+      } else {
+        setCurrentThemeKey('elegantViolet');
+      }
     } catch (error) {
-      console.log('Error deleting meeting record', error);
+      console.log('Error loading theme', error);
     }
   };
+
+  // 删除某条会议记录
+  const deleteMeetingRecord = async (id: string) => {
+    setMeetingHistory(prev => {
+      const updated = prev.filter(item => item.id !== id);
+      AsyncStorage.setItem('meetingHistory', JSON.stringify(updated));
+      console.log('Deleted ID:', id);
+      console.log('Updated list:', updated);
+      return updated;
+    });
+  };
+
+  // 切换主题
+  const toggleTheme = useCallback(async () => {
+    const themeKeys = Object.keys(themes);
+    const currentIndex = themeKeys.indexOf(currentThemeKey);
+    const nextIndex = (currentIndex + 1) % themeKeys.length;
+    const newThemeKey = themeKeys[nextIndex];
+    setCurrentThemeKey(newThemeKey);
+    await AsyncStorage.setItem(THEME_KEY, newThemeKey);
+  }, [currentThemeKey]);
+
+  // 监听手机摇晃事件自动切换主题
+  useEffect(() => {
+    const subscription = RNShake.addListener(() => {
+      toggleTheme();
+    });
+    return () => subscription.remove();
+  }, [toggleTheme]);
 
   // 组件加载或返回时，更新会议记录
   useFocusEffect(
     useCallback(() => {
       loadMeetingHistory();
+      loadTheme();
     }, []),
   );
 
@@ -62,14 +104,22 @@ const HomeScreen: React.FC = () => {
       <List.Item
         title={item.room}
         description={item.date}
-        left={props => <List.Icon {...props} icon="video" />}
+        left={() => (
+          <Image
+            source={require('../assets/video-item.png')}
+            style={[
+              styles.listIcon,
+              {tintColor: currentTheme.footerIcon.meeting},
+            ]}
+          />
+        )}
         right={() => (
           <TouchableOpacity
             onPress={() => deleteMeetingRecord(item.id)}
             style={styles.deleteButton}>
             <Image
               source={require('../assets/delete.png')}
-              style={styles.deleteIcon}
+              style={[styles.deleteIcon, {tintColor: '#F44E4E'}]}
             />
           </TouchableOpacity>
         )}
@@ -81,20 +131,36 @@ const HomeScreen: React.FC = () => {
   };
 
   return (
-    <LinearGradient colors={['#FFEFBA', '#FFD194']} style={styles.container}>
+    <LinearGradient colors={currentTheme.gradient} style={styles.container}>
       <StatusBar
         translucent
         backgroundColor="transparent"
         barStyle="dark-content"
       />
 
-      {/* 自定义顶部栏 */}
+      {/* 顶部区域：Logo + 标题（竖向排列），右侧放主题切换按钮 */}
       <View style={styles.topBar}>
-        <Text style={styles.topBarTitle}>视频会议</Text>
-        <Avatar.Image size={40} source={require('../assets/avatar.jpg')} />
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('../assets/logo-m.png')}
+            style={[styles.logo, {tintColor: currentTheme.logoTint}]}
+          />
+          <Text style={[styles.topBarTitle, {color: currentTheme.textColor}]}>
+            意行千山，天涯咫尺
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={toggleTheme}
+          style={styles.themeToggleButton}>
+          <Text
+            style={[styles.themeToggleText, {color: currentTheme.textColor}]}>
+            切换主题
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* 按钮区域 */}
+      <View style={styles.line} />
       <View style={styles.buttonRow}>
         {/* 加入会议 */}
         <TouchableOpacity
@@ -102,23 +168,29 @@ const HomeScreen: React.FC = () => {
           onPress={() => navigation.navigate('JoinMeeting')}>
           <Image
             source={require('../assets/plus.png')}
-            style={[styles.iconImage, {tintColor: undefined}]}
+            style={[styles.iconImage, {tintColor: currentTheme.joinIcon}]}
           />
-          <Text style={styles.iconText}>加入会议</Text>
+          <Text style={[styles.iconText, {color: currentTheme.textColor}]}>
+            加入会议
+          </Text>
         </TouchableOpacity>
 
         {/* 快速会议 */}
         <TouchableOpacity
           style={styles.iconButton}
-          onPress={() => {
-            const newRoom = `quick-room-${Date.now()}`;
-            navigation.navigate('Meeting', {room: newRoom, isHost: true});
-          }}>
+          onPress={() =>
+            navigation.navigate('Meeting', {
+              room: `quick-room-${Date.now()}`,
+              isHost: true,
+            })
+          }>
           <Image
             source={require('../assets/quick_meeting.png')}
-            style={[styles.iconImage, {tintColor: undefined}]}
+            style={[styles.iconImage, {tintColor: currentTheme.quickIcon}]}
           />
-          <Text style={styles.iconText}>快速会议</Text>
+          <Text style={[styles.iconText, {color: currentTheme.textColor}]}>
+            快速会议
+          </Text>
         </TouchableOpacity>
 
         {/* 创建加密会议 */}
@@ -127,14 +199,20 @@ const HomeScreen: React.FC = () => {
           onPress={() => navigation.navigate('CreateSecureMeeting')}>
           <Image
             source={require('../assets/lock.png')}
-            style={[styles.iconImage, {tintColor: undefined}]}
+            style={[styles.iconImage, {tintColor: currentTheme.secureIcon}]}
           />
-          <Text style={styles.iconText}>加密会议</Text>
+          <Text style={[styles.iconText, {color: currentTheme.textColor}]}>
+            加密会议
+          </Text>
         </TouchableOpacity>
       </View>
 
+      <View style={styles.line} />
+
       {/* 历史会议 */}
-      <Text style={styles.sectionTitle}>历史会议</Text>
+      <Text style={[styles.sectionTitle, {color: currentTheme.textColor}]}>
+        历史会议
+      </Text>
       {meetingHistory.length > 0 ? (
         <FlatList
           data={meetingHistory}
@@ -146,9 +224,11 @@ const HomeScreen: React.FC = () => {
         <View style={styles.emptyContainer}>
           <Image
             source={require('../assets/coffee.png')}
-            style={[styles.emptyImage, {tintColor: '#FFA500'}]}
+            style={[styles.emptyImage, {tintColor: currentTheme.joinIcon}]}
           />
-          <Text style={styles.emptyText}>暂无会议记录</Text>
+          <Text style={[styles.emptyText, {color: currentTheme.textColor}]}>
+            暂无会议记录
+          </Text>
         </View>
       )}
 
@@ -157,21 +237,21 @@ const HomeScreen: React.FC = () => {
         <TouchableOpacity onPress={() => {}} style={styles.footerItem}>
           <Image
             source={require('../assets/video.png')}
-            style={[styles.footerIcon, {tintColor: '#FF6F61'}]}
+            style={[styles.footerIcon, {tintColor: '#E87EA0'}]}
           />
           <Text style={styles.footerText}>会议</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => {}} style={styles.footerItem}>
           <Image
             source={require('../assets/ai.png')}
-            style={[styles.footerIcon, {tintColor: '#d7501d'}]}
+            style={[styles.footerIcon, {tintColor: '#FFA500'}]}
           />
           <Text style={styles.footerText}>AI</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => {}} style={styles.footerItem}>
           <Image
             source={require('../assets/people.png')}
-            style={[styles.footerIcon, {tintColor: '#d7501d'}]}
+            style={[styles.footerIcon, {tintColor: '#FF4500'}]}
           />
           <Text style={styles.footerText}>我的</Text>
         </TouchableOpacity>
@@ -181,89 +261,107 @@ const HomeScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  /*********** 容器 ***********/
-  container: {
-    flex: 1,
-  },
-
-  /*********** 顶部栏 ***********/
+  container: {flex: 1},
+  line: {height: 1, backgroundColor: 'rgba(0,0,0,0.15)'},
+  /******** 顶部区域 ********/
   topBar: {
-    marginTop: 40, // 让背景延伸到状态栏下
+    marginTop: 40,
     paddingHorizontal: 20,
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  logoContainer: {
+    alignItems: 'center',
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    resizeMode: 'contain',
+    marginBottom: 0, // 缩小 logo 与标题间距
   },
   topBarTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
   },
-
-  /*********** 功能按钮区 ***********/
+  themeToggleButton: {
+    padding: 8,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    borderRadius: 4,
+  },
+  themeToggleText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  /******** 功能按钮区 ********/
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
-    marginTop: 20,
-    marginBottom: 10,
+    paddingVertical: 10,
+    marginTop: 10,
+    backgroundColor: 'rgba(255,255,255,0.3)',
   },
   iconButton: {
     alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.4)',
+    padding: 10,
+    borderRadius: 8,
     width: 80,
   },
   iconImage: {
-    width: 60,
-    height: 60,
+    width: 48,
+    height: 48,
     marginBottom: 5,
-    // tintColor: undefined  // 保持原色，防止被背景遮盖
   },
   iconText: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '600',
   },
-
-  /*********** 历史会议区 ***********/
+  /******** 历史会议 ********/
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     paddingHorizontal: 16,
     paddingVertical: 10,
-    color: '#333',
+  },
+  listIcon: {
+    width: 24,
+    height: 24,
+    marginLeft: 8,
+    marginTop: 10,
   },
   deleteButton: {
     justifyContent: 'center',
+    alignItems: 'center',
+    width: 40,
+    height: 40,
     marginRight: 15,
   },
   deleteIcon: {
     width: 24,
     height: 24,
-    tintColor: undefined, // 红色删除按钮
   },
-
-  /*********** 空状态 ***********/
+  /******** 空状态 ********/
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   emptyImage: {
-    width: 120,
-    height: 120,
+    width: 100,
+    height: 100,
     marginBottom: 10,
   },
   emptyText: {
     textAlign: 'center',
-    color: '#999',
     fontSize: 16,
   },
-
-  /*********** 底部导航 ***********/
+  /******** 底部导航 ********/
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(255,255,255,0.4)',
   },
   footerItem: {
     alignItems: 'center',
@@ -277,7 +375,6 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#333',
   },
 });
 
