@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
   StatusBar,
+  Animated,
 } from 'react-native';
 import {Text, List} from 'react-native-paper';
 import LinearGradient from 'react-native-linear-gradient';
@@ -16,7 +17,7 @@ import {
 } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RNShake from 'react-native-shake';
-import {themes} from '../util/themes';
+import {themes} from '../ui-util/themes';
 
 interface MeetingRecord {
   id: string;
@@ -32,6 +33,37 @@ const HomeScreen: React.FC = () => {
   const [currentThemeKey, setCurrentThemeKey] =
     useState<string>('elegantViolet');
   const currentTheme = themes[currentThemeKey];
+
+  // 用于旋转动画
+  const rotation = useState(new Animated.Value(0))[0];
+
+  // 定义动画边框颜色：插值效果，形成流光效果
+  const animatedBorderColor = rotation.interpolate({
+    inputRange: [0, 0.33, 0.66, 1],
+    outputRange: [
+      currentTheme.gradient[0],
+      currentTheme.gradient[1],
+      currentTheme.gradient[2],
+      currentTheme.gradient[0],
+    ],
+  });
+
+  useEffect(() => {
+    // 重置动画值
+    rotation.setValue(0);
+    const anim = Animated.loop(
+      Animated.timing(rotation, {
+        toValue: 1,
+        duration: 3000,
+        useNativeDriver: true,
+      }),
+    );
+    anim.start();
+    return () => {
+      // 在组件卸载时停止动画
+      anim.stop();
+    };
+  }, [rotation]); // 只在组件挂载时运行一次
 
   // 读取会议历史
   const loadMeetingHistory = async () => {
@@ -119,7 +151,10 @@ const HomeScreen: React.FC = () => {
             style={styles.deleteButton}>
             <Image
               source={require('../assets/delete.png')}
-              style={[styles.deleteIcon, {tintColor: '#F44E4E'}]}
+              style={[
+                styles.deleteIcon,
+                {tintColor: currentTheme.footerIcon.meeting},
+              ]}
             />
           </TouchableOpacity>
         )}
@@ -149,14 +184,28 @@ const HomeScreen: React.FC = () => {
             意行千山，天涯咫尺
           </Text>
         </View>
-        <TouchableOpacity
-          onPress={toggleTheme}
-          style={styles.themeToggleButton}>
-          <Text
-            style={[styles.themeToggleText, {color: currentTheme.textColor}]}>
-            切换主题
-          </Text>
-        </TouchableOpacity>
+        <Animated.View
+          style={[
+            styles.themeToggleContainer,
+            {
+              borderColor: animatedBorderColor,
+              transform: [
+                {
+                  rotate: rotation.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0deg', '360deg'],
+                  }),
+                },
+              ],
+            },
+          ]}>
+          <TouchableOpacity onPress={toggleTheme}>
+            <Image
+              source={require('../assets/MoreColors.png')}
+              style={[styles.themeToggleIcon]}
+            />
+          </TouchableOpacity>
+        </Animated.View>
       </View>
 
       {/* 按钮区域 */}
@@ -234,26 +283,38 @@ const HomeScreen: React.FC = () => {
 
       {/* 自定义底部导航栏 */}
       <View style={styles.footer}>
-        <TouchableOpacity onPress={() => {}} style={styles.footerItem}>
+        <TouchableOpacity style={styles.footerItem}>
           <Image
             source={require('../assets/video.png')}
-            style={[styles.footerIcon, {tintColor: '#E87EA0'}]}
+            style={[
+              styles.footerIcon,
+              {tintColor: currentTheme.footerIcon.meeting},
+            ]}
           />
-          <Text style={styles.footerText}>会议</Text>
+          <Text style={[styles.footerText, {color: currentTheme.textColor}]}>
+            会议
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => {}} style={styles.footerItem}>
+        <TouchableOpacity style={styles.footerItem}>
           <Image
             source={require('../assets/ai.png')}
-            style={[styles.footerIcon, {tintColor: '#FFA500'}]}
+            style={[styles.footerIcon, {tintColor: currentTheme.footerIcon.ai}]}
           />
-          <Text style={styles.footerText}>AI</Text>
+          <Text style={[styles.footerText, {color: currentTheme.textColor}]}>
+            AI
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => {}} style={styles.footerItem}>
+        <TouchableOpacity style={styles.footerItem}>
           <Image
             source={require('../assets/people.png')}
-            style={[styles.footerIcon, {tintColor: '#FF4500'}]}
+            style={[
+              styles.footerIcon,
+              {tintColor: currentTheme.footerIcon.account},
+            ]}
           />
-          <Text style={styles.footerText}>我的</Text>
+          <Text style={[styles.footerText, {color: currentTheme.textColor}]}>
+            我的
+          </Text>
         </TouchableOpacity>
       </View>
     </LinearGradient>
@@ -284,14 +345,18 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
-  themeToggleButton: {
-    padding: 8,
-    backgroundColor: 'rgba(255,255,255,0.6)',
-    borderRadius: 4,
+  themeToggleContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 30,
+    borderWidth: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  themeToggleText: {
-    fontSize: 14,
-    fontWeight: '600',
+  themeToggleIcon: {
+    width: 36,
+    height: 36,
+    // 保持原始彩色，不添加 tintColor
   },
   /******** 功能按钮区 ********/
   buttonRow: {
@@ -335,7 +400,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 40,
     height: 40,
-    marginRight: 15,
+    marginRight: 10,
   },
   deleteIcon: {
     width: 24,

@@ -32,6 +32,7 @@ const App = () => (
         name="JoinMeeting"
         options={{
           title: '加入会议',
+          headerShown: false,
         }}
       />
       <RootStack.Screen
@@ -39,6 +40,7 @@ const App = () => (
         name="CreateSecureMeeting"
         options={{
           title: '创建加密会议',
+          headerShown: false,
         }}
       />
     </RootStack.Navigator>
