@@ -1,37 +1,30 @@
 import React, {useCallback, useRef} from 'react';
-
 import {JitsiMeeting} from '@jitsi/react-native-sdk';
-
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface MeetingProps {
-  route: { params: { room: string; isHost?: boolean; password?: string } };
+  route: {params: {room: string; isHost?: boolean; password?: string}};
 }
 
 const MeetingScreen: React.FC<MeetingProps> = ({route}) => {
-  const jitsiMeeting = useRef(null);
+  const jitsiMeeting = useRef<any>(null);
   const navigation = useNavigation();
-  const {room, isHost} = route.params; // Added isHost
+  const {room, isHost, password} = route.params;
 
   const saveMeetingRecord = async (roomName: string, meetingDate: string) => {
     try {
-      // 获取当前存储的会议记录
       const existingRecords = await AsyncStorage.getItem('meetingHistory');
       const records = existingRecords ? JSON.parse(existingRecords) : [];
-
-      // 添加新的会议记录
       const newRecord = {
         id: Date.now().toString(),
         room: roomName,
-        date: meetingDate,
+        date: new Date().toLocaleString(),
       };
-      const updateRecords = [newRecord, ...records];
-
-      // 存入 AsynStorage
+      const updatedRecords = [newRecord, ...records];
       await AsyncStorage.setItem(
         'meetingHistory',
-        JSON.stringify(updateRecords),
+        JSON.stringify(updatedRecords),
       );
     } catch (error) {
       console.log('Error saving meeting record', error);
@@ -42,7 +35,6 @@ const MeetingScreen: React.FC<MeetingProps> = ({route}) => {
     const meetingDate = new Date().toLocaleString();
     saveMeetingRecord(room, meetingDate);
     navigation.navigate('Home');
-    // @ts-ignore
     if (jitsiMeeting.current) {
       jitsiMeeting.current.close();
     }
@@ -52,29 +44,53 @@ const MeetingScreen: React.FC<MeetingProps> = ({route}) => {
     console.log('You got a message!');
   }, []);
 
+  const onConferenceJoined = useCallback(() => {
+    console.log('Conference joined!');
+    console.log('isHost:', isHost, 'password:', password);
+    console.log('jitsiMeeting.current:', jitsiMeeting.current);
+    if (
+      isHost &&
+      password &&
+      jitsiMeeting.current &&
+      typeof jitsiMeeting.current.setPassword === 'function'
+    ) {
+      jitsiMeeting.current.setPassword(password);
+      console.log('Password set to:', password);
+    } else {
+      console.log('条件未满足，无法设置密码');
+    }
+  }, [isHost, password]);
+
   const eventListeners = {
     onReadyToClose,
     onEndpointMessageReceived,
+    onConferenceJoined,
   };
 
   return (
     <JitsiMeeting
       config={{
         hideConferenceTimer: true,
+        // 直接在 config 中启用大厅模式
+        configOverwrite: {
+          lobbyEnabled: true,
+          recordingServiceEnabled: true,
+          fileRecordingsEnabled: true,
+        },
         customToolbarButtons: [
-          {
-            icon: 'https://w7.pngwing.com/pngs/987/537/png-transparent-download-downloading-save-basic-user-interface-icon-thumbnail.png',
-            id: 'btn1',
-            text: 'Button one',
-          },
-          {
-            icon: 'https://w7.pngwing.com/pngs/987/537/png-transparent-download-downloading-save-basic-user-interface-icon-thumbnail.png',
-            id: 'btn2',
-            text: 'Button two',
-          },
+          // {
+          //   icon: 'https://your-icon-url.com/record.png',
+          //   id: 'record',
+          //   text: 'Start Recording',
+          // },
+          // {
+          //   icon: 'https://w7.pngwing.com/pngs/987/537/png-transparent-download-downloading-save-basic-user-interface-icon-thumbnail.png',
+          //   id: 'btn2',
+          //   text: 'Button two',
+          // },
         ],
-        startWithAudioMuted: !isHost, // Host starts unmuted
-        startWithVideoMuted: !isHost, // Host starts unmuted
+        startWithAudioMuted: !isHost,
+        startWithVideoMuted: !isHost,
       }}
       eventListeners={eventListeners as any}
       flags={{
@@ -88,6 +104,11 @@ const MeetingScreen: React.FC<MeetingProps> = ({route}) => {
         'conference-timer.enabled': true,
         'close-captions.enabled': false,
         'toolbox.enabled': true,
+        'ios.recording': true,
+        'android.recording': true,
+        'live-streaming.enabled': false, // ✅ 确保关闭直播
+        'file-recording.enabled': true, // ✅ 允许文件录制
+        'recording.enabled': true, // ✅ 允许录制
       }}
       ref={jitsiMeeting}
       style={{flex: 1}}

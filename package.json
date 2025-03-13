@@ -19,14 +19,17 @@
     "@react-native-community/slider": "4.4.3",
     "@react-native-google-signin/google-signin": "10.1.0",
     "@react-native/metro-config": "*",
+    "axios": "^1.8.3",
+    "openai": "^4.87.3",
     "react": "18.2.0",
     "react-native": "*",
     "react-native-background-timer": "2.4.1",
     "react-native-calendar-events": "2.2.0",
     "react-native-default-preference": "1.4.4",
     "react-native-device-info": "10.9.0",
-    "react-native-gesture-handler": "2.18.1",
+    "react-native-gesture-handler": "^2.18.1",
     "react-native-get-random-values": "1.9.0",
+    "react-native-image-picker": "^8.2.0",
     "react-native-immersive-mode": "2.0.2",
     "react-native-keep-awake": "4.0.0",
     "react-native-linear-gradient": "^2.8.3",
@@ -43,7 +46,8 @@
     "react-native-video": "6.0.0-alpha.11",
     "react-native-watch-connectivity": "1.1.0",
     "react-native-webrtc": "124.0.4",
-    "react-native-webview": "13.8.7"
+    "react-native-webview": "13.8.7",
+    "rn-fetch-blob": "^0.12.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

@@ -6,7 +6,8 @@ import {
   StatusBar,
   Animated,
   Easing,
-  SafeAreaView, TouchableOpacity,
+  SafeAreaView,
+  TouchableOpacity,
 } from 'react-native';
 import {Button, TextInput} from 'react-native-paper';
 import LinearGradient from 'react-native-linear-gradient';

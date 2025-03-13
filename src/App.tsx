@@ -7,6 +7,7 @@ import HomeScreen from './screens/HomeScreen';
 import MeetingScreen from './screens/MeetingScreen';
 import JoinMeetingScreen from './screens/JoinMeetingScreen';
 import CreateSecureMeetingScreen from './screens/CreateSecureMeetingScreen';
+import AIChatScreen from './screens/AiChatScreen';
 
 const RootStack = createStackNavigator();
 
@@ -17,6 +18,14 @@ const App = () => (
         component={HomeScreen}
         name="Home"
         options={{
+          headerShown: false,
+        }}
+      />
+      <RootStack.Screen
+        name="AIChat"
+        component={AIChatScreen}
+        options={{
+          title: 'AI Chat',
           headerShown: false,
         }}
       />

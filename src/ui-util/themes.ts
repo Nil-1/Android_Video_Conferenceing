@@ -15,6 +15,11 @@ export const themes = {
     },
     // 深色文字，适合浅色背景
     textColor: '#4A148C',
+    // 修改后的消息气泡颜色：
+    userBubble: '#F8E1F4', // 用户消息采用淡紫色背景
+    assistantBubble: '#E1BEE7', // 助手消息采用稍浅紫色背景
+    inputBackground: '#FFFFFF', // 输入框背景色
+    placeholderColor: '#999999', // 输入框占位文字颜色
   },
   goldenDawn: {
     // 采用温暖的金橙渐变，但色彩柔和
@@ -29,6 +34,11 @@ export const themes = {
       account: '#FFB300',
     },
     textColor: '#BF360C',
+    // 新增属性
+    userBubble: '#FFF3E0',
+    assistantBubble: '#FBE9E7',
+    inputBackground: '#FFFFFF',
+    placeholderColor: '#999999',
   },
   cyberBlue: {
     // 采用淡雅的蓝色渐变，营造科技感但不刺眼
@@ -43,6 +53,11 @@ export const themes = {
       account: '#1976D2',
     },
     textColor: '#0D47A1',
+    // 新增属性
+    userBubble: '#E3F2FD',
+    assistantBubble: '#ECEFF1',
+    inputBackground: '#FFFFFF',
+    placeholderColor: '#999999',
   },
   retroForest: {
     // 采用清新的森林绿渐变，整体轻盈柔和
@@ -57,6 +72,11 @@ export const themes = {
       account: '#388E3C',
     },
     textColor: '#1B5E20',
+    // 新增属性
+    userBubble: '#E8F5E9',
+    assistantBubble: '#F1F8E9',
+    inputBackground: '#FFFFFF',
+    placeholderColor: '#999999',
   },
   oceanicGradient: {
     // 采用清新海洋蓝，给人平静、温柔的感觉
@@ -71,6 +91,11 @@ export const themes = {
       account: '#0097A7',
     },
     textColor: '#006064',
+    // 新增属性
+    userBubble: '#E0F7FA',
+    assistantBubble: '#B2EBF2',
+    inputBackground: '#FFFFFF',
+    placeholderColor: '#999999',
   },
   elegantGrey: {
     // 采用柔和的灰色渐变，简约高级
@@ -85,6 +110,11 @@ export const themes = {
       account: '#616161',
     },
     textColor: '#424242',
+    // 新增属性
+    userBubble: '#F5F5F5',
+    assistantBubble: '#EEEEEE',
+    inputBackground: '#FFFFFF',
+    placeholderColor: '#999999',
   },
   rosePeach: {
     // 采用淡雅的玫瑰蜜桃渐变
@@ -99,6 +129,11 @@ export const themes = {
       account: '#C2185B',
     },
     textColor: '#880E4F',
+    // 新增属性
+    userBubble: '#FCE4EC',
+    assistantBubble: '#F8BBD0',
+    inputBackground: '#FFFFFF',
+    placeholderColor: '#999999',
   },
   stellarNight: {
     // 采用柔和夜空蓝渐变，给人高级神秘感但不沉重
@@ -113,5 +148,10 @@ export const themes = {
       account: '#303F9F',
     },
     textColor: '#1A237E',
+    // 新增属性
+    userBubble: '#E8EAF6',
+    assistantBubble: '#C5CAE9',
+    inputBackground: '#FFFFFF',
+    placeholderColor: '#999999',
   },
 };

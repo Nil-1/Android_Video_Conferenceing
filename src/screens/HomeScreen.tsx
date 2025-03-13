@@ -295,7 +295,9 @@ const HomeScreen: React.FC = () => {
             会议
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerItem}>
+        <TouchableOpacity
+          style={styles.footerItem}
+          onPress={() => navigation.navigate('AIChat')}>
           <Image
             source={require('../assets/ai.png')}
             style={[styles.footerIcon, {tintColor: currentTheme.footerIcon.ai}]}

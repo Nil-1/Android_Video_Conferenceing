@@ -24,6 +24,7 @@ const CreateSecureMeetingScreen: React.FC = () => {
   const [currentTheme, setCurrentTheme] = useState(themes.elegantViolet);
   const [currentAngle, setCurrentAngle] = useState(0);
   const angleAnim = useState(new Animated.Value(0))[0];
+  const [roomName, setRoomName] = useState(''); // 新增会议室名称
 
   useEffect(() => {
     angleAnim.setValue(0);
@@ -71,7 +72,9 @@ const CreateSecureMeetingScreen: React.FC = () => {
       Alert.alert('密码至少为4位');
       return;
     }
-    const newRoom = `secure-room-${Date.now()}`;
+    const newRoom = roomName.trim()
+      ? roomName.trim()
+      : `secure-room-${Date.now()}`;
     navigation.navigate('Meeting', {room: newRoom, password, isHost: true});
   };
 
@@ -110,6 +113,14 @@ const CreateSecureMeetingScreen: React.FC = () => {
         <Title style={[styles.title, {color: currentTheme.textColor}]}>
           创建加密会议
         </Title>
+        <TextInput
+          label="会议室名称（可选）"
+          value={roomName}
+          onChangeText={text => setRoomName(text)}
+          mode="outlined"
+          style={styles.input}
+          placeholder="输入会议室名称"
+        />
         <TextInput
           label="设置会议密码"
           value={password}
@@ -167,7 +178,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
-    marginTop: 80, // 确保内容不与导航栏重叠
+    marginTop: 80,
   },
   title: {
     fontSize: 28,
