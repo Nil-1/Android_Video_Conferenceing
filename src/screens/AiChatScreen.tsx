@@ -29,7 +29,7 @@ const THEME_KEY = 'uiTheme';
 const AIChatScreen: React.FC = () => {
   const navigation = useNavigation();
   const [messages, setMessages] = useState<Message[]>([
-    {role: 'system', content: 'You are a helpful assistant.'},
+    {role: 'system', content: '我是一个智能会议助手.'},
   ]);
   const [input, setInput] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);

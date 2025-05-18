@@ -8,6 +8,7 @@ import MeetingScreen from './screens/MeetingScreen';
 import JoinMeetingScreen from './screens/JoinMeetingScreen';
 import CreateSecureMeetingScreen from './screens/CreateSecureMeetingScreen';
 import AIChatScreen from './screens/AiChatScreen';
+import MyPageScreen from './screens/MyPageScreen';
 
 const RootStack = createStackNavigator();
 
@@ -49,6 +50,14 @@ const App = () => (
         name="CreateSecureMeeting"
         options={{
           title: '创建加密会议',
+          headerShown: false,
+        }}
+      />
+      <RootStack.Screen
+        component={MyPageScreen}
+        name="MyPage"
+        options={{
+          title: '我的',
           headerShown: false,
         }}
       />

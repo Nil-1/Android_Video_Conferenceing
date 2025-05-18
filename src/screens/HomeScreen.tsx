@@ -306,7 +306,9 @@ const HomeScreen: React.FC = () => {
             AI
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerItem}>
+        <TouchableOpacity
+          style={styles.footerItem}
+          onPress={() => navigation.navigate('MyPage')}>
           <Image
             source={require('../assets/people.png')}
             style={[

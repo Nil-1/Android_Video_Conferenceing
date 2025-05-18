@@ -77,18 +77,7 @@ const MeetingScreen: React.FC<MeetingProps> = ({route}) => {
           recordingServiceEnabled: true,
           fileRecordingsEnabled: true,
         },
-        customToolbarButtons: [
-          // {
-          //   icon: 'https://your-icon-url.com/record.png',
-          //   id: 'record',
-          //   text: 'Start Recording',
-          // },
-          // {
-          //   icon: 'https://w7.pngwing.com/pngs/987/537/png-transparent-download-downloading-save-basic-user-interface-icon-thumbnail.png',
-          //   id: 'btn2',
-          //   text: 'Button two',
-          // },
-        ],
+        customToolbarButtons: [],
         startWithAudioMuted: !isHost,
         startWithVideoMuted: !isHost,
       }}
